@@ -10,59 +10,76 @@ let ang = 0;
 
 function setup()
 {
-  createCanvas(600,400);
+  createCanvas(1000, 1000, WEBGL);
   background(57);
 
-  angOff = PI/64;
+
+  angOff = PI/100;
 }
 
 function draw()
 {
   background(57);
   rectMode(CENTER);
-  translate(width/2, height/2);
-
+  //translate(width/2, height/2);
   let curAng = ang;
-  translate(-totalW/2, 0);
-  for (i=0; i<divC; i++, curAng+=angOff) {
-    push();
-    let val = abs(sin(curAng));
-    let h = map(val, 0, 1, minH, maxH);
-    translate(divW * i, 0);
-    rect(0,0,divW-2,h);
-    pop();
+  translate(-totalW/2, -totalW/2);
+
+
+
+  for (i=0; i<divW; i++)
+  {
+    for(j=0;j<divC;j++)
+    {
+      if(i<=divW/2)
+      {
+        if(j<=divC/2)
+        {
+          if(i+j<=divC/2)
+          {
+            continue;
+          }
+          curAng=ang+angOff*i*j;
+        }
+        else {
+          if(i+(divC-j)<=divC/2)
+          {
+            continue;
+          }
+          curAng=ang+angOff*i*(divC-j);
+        }
+      }
+      else
+      {
+        if(j<=divC/2)
+        {
+          if((divW-i)+j<=divC/2)
+          {
+            continue;
+          }
+          curAng=ang+angOff*(divW-i)*j;
+        }
+        else {
+          if((divW-i)+(divC-j)<=divC/2)
+          {
+            continue;
+          }
+          curAng=ang+angOff*(divW-i)*(divC-j);
+        }
+      }
+      noStroke();
+      fill(color(255*i/divW,255*j/divC, 255*i*j/divW));
+      push();
+      let val = abs(sin(curAng));
+      let h = map(val, 0, 1, minH, maxH);
+      translate(divW*i,divC * j);
+      rotateX(3*PI/4);
+      rotateY(3*PI/4);
+      box(divW,h,divC);
+      pop();
+    }
   }
+
   ang += angOff;
 
 }
-
-// function draw()
-// {
-//   background(57);
-//   rectMode(CENTER);
-//   translate(width/2, height/2);
-//   console.log(degrees(ang));
-//
-//   // translate(-totalW/2, 0);
-//   let curAng = ang;
-//   // for (i=0; i<divC; i++, curAng+=angOff) {
-//     push();
-//     let val = abs(sin(curAng));
-//     let h = map(val, 0, 1, minH, maxH);
-//     translate(divW, 0);
-//     rect(0,0,divW-2,h);
-//     pop();
-//   // }
-//   ang += angOff;
-//   frameRate(8);
-// }
-
-// function draw()
-// {
-//   if (mouseIsPressed)
-//     fill(255);
-//   else
-//     fill(40, 255, 70);
-//
-//   ellipse(mouseX, mouseY, 25,25);
-// }
