@@ -11,12 +11,12 @@ function setup()
   totalW=divC*divW;
   minH=pixel;
   maxH=pow(minH,2);
-  angOff = PI/32;
-  createCanvas(divW*(pixel+1),divC*(pixel+1), WEBGL);
+  angOff = PI/divC;
+  createCanvas(divW*(pixel),divC*(pixel), WEBGL);
   rectMode(CENTER);
   noStroke();
 
-  camera((height/2.0), (height/2.0), (height/1.0) ,//camera position
+  camera((height/1.6), (height/1.6), (height/0.8) ,//camera position
           0,0,0,            ///center of the sketch
           sin(90), sin(90), 0);///shift camera
 }
