@@ -1,69 +1,55 @@
 let minH;
 let maxH;
 let totalW ;
-let divC = 20;
+let divC = 32;
 let divW = divC;
-
+let pixel=16;
 let ang = 0;
 
 function setup()
 {
   createCanvas(windowWidth, windowHeight, WEBGL);
-  //background(57);
-  // divW=windowHeight/32;
-  // divC=windowWidth/32;
   totalW=divC*divW;
-  minH=20;
+  minH=pixel;
   maxH=pow(minH,2);
-
-  angOff = PI*sqrt(2)/150;
-
+  angOff = PI/32;
   rectMode(CENTER);
-
-  directionalLight(154,228,176, -3*PI/4, 3*PI/4,-3*PI/4);
-  //ambientMaterial(100,100,100);
+  //fill(255,255,255);
+  //directionalLight(130,186,180, -sin(90), sin(90),-sin(90));
   noStroke();
-  //rotate(3*PI/4,3*PI/4);
 
-  camera( (height/2.0), (height/2.0), (height/2.0) ,//camera position
-          0, 0, 0,///looking at
+  camera( (height/2.0), (height/2.0), (height/1.0) ,//camera position
+          -divW, -divC, 0,///looking at
           sin(90), sin(90), 0);
+
+
+
 }
 
 function draw()
 {
 
-  let curAng = ang;
-  background(250,250,250);
-
-
-  //translate(width/2, height/2);
-
+  background(240,240,240);
   translate(-totalW/2, -totalW/2);
-
-
-
-
-  for (i=0;i<divW; i+=1)
+  for (i=0;i<divW; i++)
   {
-    for(j=0;j<divC;j+=1)
+    for(j=0;j<divC;j++)
     {
-      curAng=(ang+angOff*
-        Math.sqrt(Math.pow(divW/2-i, 2) + Math.pow(divC/2-j, 2)))*2;
-
-
+      val=sin(ang-pythagorean(divW/2-i, divC/2-j)/3);
+      let h = map(val, -1, 1, minH, maxH);
       push();
-      let val = abs(sin(curAng));
-      let h = map(val, 0, 1, minH, maxH);
-      translate(divW*(i),divC*(j));///split
-      //rotateX(3*PI/4);
-      //rotateY(3*PI/4);
-      //rotateZ(3*PI/4);
-      box(divC,divW,h);
+
+      translate(pixel*(i),pixel*(j));///split
+      fill(color(255*(h)/(maxH),255*i/divW,255*j/divC));
+      box(pixel,pixel,h);
       pop();
     }
   }
-
   ang += angOff;
+  ang %=TWO_PI;
+}
 
+
+function pythagorean(sideA, sideB){
+  return Math.sqrt(Math.pow(sideA, 2) + Math.pow(sideB, 2));
 }
