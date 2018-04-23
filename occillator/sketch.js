@@ -8,29 +8,23 @@ let ang = 0;
 
 function setup()
 {
-  createCanvas(windowWidth, windowHeight, WEBGL);
   totalW=divC*divW;
   minH=pixel;
   maxH=pow(minH,2);
   angOff = PI/32;
+  createCanvas(divW*(pixel+1),divC*(pixel+1), WEBGL);
   rectMode(CENTER);
-  //fill(255,255,255);
-  //directionalLight(130,186,180, -sin(90), sin(90),-sin(90));
   noStroke();
 
-  camera( (height/2.0), (height/2.0), (height/1.0) ,//camera position
-          -divW, -divC, 0,///looking at
-          sin(90), sin(90), 0);
-
-
-
+  camera((height/2.0), (height/2.0), (height/1.0) ,//camera position
+          0,0,0,            ///center of the sketch
+          sin(90), sin(90), 0);///shift camera
 }
 
 function draw()
 {
-
   background(240,240,240);
-  translate(-totalW/2, -totalW/2);
+  translate(-totalW/3, -totalW/3);
   for (i=0;i<divW; i++)
   {
     for(j=0;j<divC;j++)
@@ -38,7 +32,6 @@ function draw()
       val=sin(ang-pythagorean(divW/2-i, divC/2-j)/3);
       let h = map(val, -1, 1, minH, maxH);
       push();
-
       translate(pixel*(i),pixel*(j));///split
       fill(color(255*(h)/(maxH),255*i/divW,255*j/divC));
       box(pixel,pixel,h);
@@ -48,7 +41,6 @@ function draw()
   ang += angOff;
   ang %=TWO_PI;
 }
-
 
 function pythagorean(sideA, sideB){
   return Math.sqrt(Math.pow(sideA, 2) + Math.pow(sideB, 2));
