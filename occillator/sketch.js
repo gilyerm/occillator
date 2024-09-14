@@ -1,4 +1,4 @@
-const boxWidth = 32;
+const boxWidth = 64;
 const boxesPerRow = 16;
 const canvasWidth = boxWidth * boxesPerRow;
 const canvasHeight = canvasWidth; // Make the canvas square
@@ -9,68 +9,109 @@ const colors = [
   [230, 228, 176],
   [63, 84, 132],
 ];
+
 let angle = 0; // Angle for the sine wave
-let maxDistance;
+let halfWidth, halfHeight;
+let offsets = [];
 
 function setup() {
   createCanvas(canvasWidth, canvasHeight, WEBGL);
-  noStroke();
+  noStroke(); // Remove the stroke from the shapes
 
-  maxDistance = dist(0, 0, width / 2, height / 2); // Calculate the maximum distance from the center of the canvas
+  halfWidth = width / 2;
+  halfHeight = height / 2;
+  let maxDistance = dist(0, 0, halfWidth, halfHeight); // Calculate the maximum distance from the center of the canvas
+
+  // Precompute offsets
+  for (let z = 0; z < height; z += boxWidth) {
+    let rowOffsets = [];
+    for (let x = 0; x < width; x += boxWidth) {
+      const distance = dist(x + boxWidth / 2, z + boxWidth / 2, width / 2, height / 2);
+      const offset = map(distance, 0, maxDistance, -PI, PI);
+      rowOffsets.push(offset);
+    }
+    offsets.push(rowOffsets);
+  }
 }
 
 function draw() {
   clear(); // Clear the canvas before drawing the next frame
-  ortho(-width, width, -height, height); // Set the orthographic projection
+  ortho(-width, width, -height, height, -width * height, width * height); // Set the orthographic projection
 
   rotateX(-QUARTER_PI / 1.25); // Rotate the canvas around the x-axis
   rotateY(QUARTER_PI); // Rotate the canvas around the y-axis
   
-  for (let z = 0; z < height; z += boxWidth) { // Loop through the depth of the canvas with a step of boxWidth
-    for (let x = 0; x < width; x += boxWidth) { // Loop through the width of the canvas with a step of boxWidth
+  for (let z = 0, row = 0; z < height; z += boxWidth, row++) { // Loop through the depth of the canvas with a step of boxWidth
+    for (let x = 0, col = 0; x < width; x += boxWidth, col++) { // Loop through the width of the canvas with a step of boxWidth
+      const offset = offsets[row][col];
+      const angleOffset = angle + offset;
+      const boxHight = map(sin(angleOffset), -1, 1, boxMinHeight, boxMaxHeight); // Map the sine value to the height of the rectangle
+
       push(); // Save the current transformation matrix
-
-      const distance = dist(x + boxWidth / 2, z + boxWidth / 2, width / 2, height / 2); 
-      // Calculate the distance from the center of the canvas from the center of the rectangle
-      const offset = map(distance, 0, maxDistance, -PI, PI); // Map the distance to an offset angle
-      const boxHight = map(sin(angle + offset), -1, 1, boxMinHeight, boxMaxHeight); // Map the sine value to the height of the rectangle
-
-      translate(x - (width / 2), 0, z - (height / 2)); // Translate the origin to the center of the rectangle
-
+      translate(x - halfWidth, 0, z - halfHeight); // Translate the origin to the center of the rectangle
       drawBox(boxWidth, boxHight, boxWidth); // Draw the box with different colors on each side
       pop(); // Restore the transformation matrix
     }
   }
-  
-  angle = (angle - 0.1) % TWO_PI; // Update angle for animation
+
+  angle = (angle - 0.05) % TWO_PI; // Update angle for animation
 }
 
-function drawBox(w, h, d) { // Function to draw a box with different colors on each side
-  // Define the 8 vertices of the cube
-  const vertices = [
-    [-w / 2, -h / 2, -d / 2], // 0
-    [w / 2, -h / 2, -d / 2],  // 1
-    [w / 2, h / 2, -d / 2],   // 2
-    [-w / 2, h / 2, -d / 2],  // 3
-    [-w / 2, -h / 2, d / 2],  // 4
-    [w / 2, -h / 2, d / 2],   // 5
-    [w / 2, h / 2, d / 2],    // 6
-    [-w / 2, h / 2, d / 2],    // 7
-  ];
-
-  // Use a loop to define each face and color to reduce redundant code
+// Function to draw a box with different colors on each side
+function drawBox(boxWidth, boxHeight, boxDepth) {
   const faces = [
-    { indices: [...vertices[0], ...vertices[1], ...vertices[5], ...vertices[4]], color: colors[0] },
-    { indices: [...vertices[4], ...vertices[5], ...vertices[6], ...vertices[7]], color: colors[1] },
-    { indices: [...vertices[0], ...vertices[3], ...vertices[7], ...vertices[4]], color: colors[2] },
-    // { indices: [...vertices[1], ...vertices[2], ...vertices[6], ...vertices[5]], color: colors[2] },
-    // { indices: [...vertices[0], ...vertices[1], ...vertices[2], ...vertices[3]], color: colors[1] },
-    // { indices: [...vertices[2], ...vertices[3], ...vertices[7], ...vertices[6]], color: colors[0] },
+    // Top face
+    {
+      translation: [0, -boxHeight / 2, 0],
+      rotation: [HALF_PI, 0, 0],
+      color: colors[0],
+      planeSize: [boxWidth, boxDepth],
+    },
+    // // Bottom face
+    // {
+    //   translation: [0, boxHeight / 2, 0],
+    //   rotation: [-HALF_PI, 0, 0],
+    //   color: colors[0],
+    //   planeSize: [boxWidth, boxDepth],
+    // },
+    // Front face
+    {
+      translation: [0, 0, boxDepth / 2],
+      rotation: [0, 0, 0],
+      color: colors[1],
+      planeSize: [boxWidth, boxHeight],
+    },
+    // // Back face
+    // {
+    //   translation: [0, 0, -boxDepth / 2],
+    //   rotation: [0, PI, 0],
+    //   color: colors[1],
+    //   planeSize: [boxWidth, boxHeight],
+    // },
+    // // Right face
+    // {
+    //   translation: [boxWidth / 2, 0, 0],
+    //   rotation: [0, HALF_PI, 0],
+    //   color: colors[2],
+    //   planeSize: [boxDepth, boxHeight],
+    // },
+    // Left face
+    {
+      translation: [-boxWidth / 2, 0, 0],
+      rotation: [0, -HALF_PI, 0],
+      color: colors[2],
+      planeSize: [boxDepth, boxHeight],
+    },
   ];
 
-  // Draw each face of the box
   faces.forEach(face => {
+    push();
+    translate(...face.translation);
+    if (face.rotation[0]) rotateX(face.rotation[0]);
+    if (face.rotation[1]) rotateY(face.rotation[1]);
+    if (face.rotation[2]) rotateZ(face.rotation[2]);
     fill(...face.color);
-    quad(...face.indices);
+    plane(...face.planeSize); // Draw a plane with the specified size
+    pop();
   });
 }
